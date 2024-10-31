@@ -1,3 +1,6 @@
+NOTE: This branch is deprecated. The functionality needed by AquaINFRA project was integrated into the main branch.
+
+
 # **pyOWT**: python library for Optical Water Type classification
 
 Version 0.41
