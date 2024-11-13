@@ -17,6 +17,7 @@ shapely
 SQLAlchemy<2.0.0
 tinydb
 unicodecsv
+geopandas
 
 # Needed for the GeoFRESH case:
 #psycopg2
