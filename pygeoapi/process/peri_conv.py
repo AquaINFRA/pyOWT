@@ -159,8 +159,8 @@ def run_docker_container(
         date_col_name,  
         group_to_periods,  
         period_labels,
-        year_starts_at_dec1,
         date_format,
+        year_starts_at_dec1,
         f"{container_out}/{outputFilename}"  # Output filename
     ]
     
