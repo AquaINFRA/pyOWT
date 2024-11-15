@@ -9,10 +9,6 @@ library(lubridate)
 library(dplyr)
 library(jsonlite)
 
-print("install")
-install.packages("curl")
-print("installed")
-
 ## Args
 args <- commandArgs(trailingOnly = TRUE)
 print(paste0('R Command line args: ', args))
