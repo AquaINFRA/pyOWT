@@ -333,3 +333,18 @@ resources:
         processor:
             name: TrendAnalysisMkProcessor
 
+    barplot-trend-results:
+        type: process
+        processor:
+            name: BarplotTrendResultsProcessor
+
+    map-shapefile-points:
+        type: process
+        processor:
+            name: MapShapefilePointsProcessor
+
+    map-trends-static:
+        type: process
+        processor:
+            name: MapTrendsStaticProcessor
+

@@ -15,7 +15,14 @@ required_packages_versions <- list(
   "curl" = "5.2.1",
   "zoo" = "1.8-12",
   "tidyr" = "1.3.0",
-  "Kendall" = "2.2.1"
+  "Kendall" = "2.2.1",
+  "ggplot2" = "3.5.1",
+  "viridis" = "0.6.4",
+  "mapview" = "2.11.2",
+  "webshot" = "0.5.5",
+  "tmap" = "3.3-3",
+  "tmaptools" = "3.3-1",
+  "rosm" = "0.3.0"
 )
 
 install_if_missing <- function(pkg, version) {

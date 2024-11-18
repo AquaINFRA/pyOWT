@@ -77,6 +77,9 @@ PLUGINS = {
         'MeanByGroupProcessor': 'pygeoapi.process.mean_by_group.MeanByGroupProcessor',
         'TsSelectionInterpolationProcessor': 'pygeoapi.process.ts_selection_interpolation.TsSelectionInterpolationProcessor',
         'TrendAnalysisMkProcessor': 'pygeoapi.process.trend_analysis_mk.TrendAnalysisMkProcessor',
+        'BarplotTrendResultsProcessor': 'pygeoapi.process.barplot_trend_results.BarplotTrendResultsProcessor',
+        'MapShapefilePointsProcessor': 'pygeoapi.process.map_shapefile_points.MapShapefilePointsProcessor',
+        'MapTrendsStaticProcessor': 'pygeoapi.process.map_trends_static.MapTrendsStaticProcessor',
         'ShapelyFunctions': 'pygeoapi.process.shapely_functions.ShapelyFunctionsProcessor',  # noqa: E501
         'Echo': 'pygeoapi.process.echo.EchoProcessor',
         'UpstreamCatchmentIdGetter': 'pygeoapi.process.get_upstream_subcids.UpstreamCatchmentIdGetter',
