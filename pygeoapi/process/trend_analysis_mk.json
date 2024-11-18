@@ -1,67 +1,68 @@
 {
     "version": "0.2.0",
     "id": "trend-analysis-mk",
+    "use_case": "Daugava",
     "title": {
-        "en": "trend-analysis-mk"
+        "en": "Man-Kendall Trend Analysis on Time Series"
     },
     "description": {
-        "en": "trend-analysis-mk"
+        "en": "This process performs a Man-Kendall trend analysis to identify the presence or absence of significant trends in time series data. It returns statistical analysis coefficients (e.g., p-values, tau, and slope) for each defined group, allowing for group-wise trend identification (R function 'trend_analysis_mk')."
     },
     "jobControlOptions": ["sync-execute", "async-execute"],
-    "keywords": ["hello world", "example", "echo"],
+    "keywords": ["daugava use case", "AquaINFRA", "trend_analysis_mk", "R"],
     "links": [{
         "type": "text/html",
         "rel": "about",
-        "title": "information",
-        "href": "https://example.org/process",
+        "title": "GitHub repo",
+        "href": "https://github.com/AstraLabuce/aquainfra-usecase-Daugava",
         "hreflang": "en-US"
     }],
     "inputs": {
-        "in_data_path": {
-            "title": "Regions Shapefile",
-            "description": "TODO",
+        "input_data": {
+            "title": "Input table",
+            "description": "URL to the input table containing the time series data. This table includes grouping identifiers (if applicable), columns for time (e.g., year, month) and values to be analyzed for trends. For example, use the result from ts_selection_interpolation.",
             "schema": {
                 "type": "string"
             },
-            "minOccurs": 0,
+            "minOccurs": 1,
             "maxOccurs": 1,
-            "keywords": ["full name", "personal"]
+            "keywords": ["table", "csv"]
         },
-        "in_rel_cols": {
-            "title": "Points excel",
-            "description": "TODO",
+        "colnames_relevant": {
+            "title": "Column names identifying group(s)",
+            "description": "Column name(s) identifying relevant groups in the dataset. These columns will be used to define unique groups for which separate trend analyses are performed.",
             "schema": {
                 "type": "string"
             },
-            "minOccurs": 0,
+            "minOccurs": 1,
             "maxOccurs": 1,
-            "keywords": ["full name", "personal"]
+            "keywords": []
         },
-        "in_time_colname": {
-            "title": "Column name for longitude",
-            "description": "TODO",
+        "colname_time": {
+            "title": "Column name for time",
+            "description": "The name of the column containing the time variable (e.g., year, month) to be used in the trend analysis. Example = \"year\".",
             "schema": {
                 "type": "string"
             },
-            "minOccurs": 0,
+            "minOccurs": 1,
             "maxOccurs": 1,
-            "keywords": ["full name", "personal"]
+            "keywords": []
         },
-        "in_value_colname": {
-            "title": "Column name for latiitude",
-            "description": "TODO",
+        "colname_value": {
+            "title": "Column name for values",
+            "description": "The name of the column containing the values to be analyzed in the Man-Kendall trend test.",
             "schema": {
                 "type": "string"
             },
-            "minOccurs": 0,
+            "minOccurs": 1,
             "maxOccurs": 1,
-            "keywords": ["full name", "personal"]
+            "keywords": []
         }
     },
     "outputs": {
-        "echo": {
-            "title": "Hello, world",
-            "description": "A \"hello world\" echo with the name and (optional) message submitted for processing",
+        "trend_analysis_results": {
+            "title": "Man-Kendall trend analysis",
+            "description": "A table containing the statistical results of the Man-Kendall trend analysis for each unique group defined by colnames_relevant. The table includes coefficients such as tau, p-values, and slope for each group's time series.",
             "schema": {
                 "type": "object",
                 "contentMediaType": "application/json"
@@ -70,8 +71,10 @@
     },
     "example": {
         "inputs": {
-            "name": "World",
-            "message": "An optional message."
+            "input_data": "ts_selection_interpolation.csv",
+            "colnames_relevant": "season,polygon_id",
+            "colname_time": "Year_adj_generated",
+            "colname_value": "Secchi_m_mean_annual"
         }
     }
 }
