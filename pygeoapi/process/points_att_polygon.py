@@ -126,6 +126,8 @@ def run_docker_container(
 
     script = 'points_att_polygon.R'
 
+    print("------------------------------------------------")
+
     # Mount volumes and set command
     docker_command = [
         "sudo", "docker", "run", "--rm", "--name", container_name,
@@ -140,6 +142,8 @@ def run_docker_container(
         lat_col_name,
         f"{container_out}/{outputFilename}"  # Output filename
     ]
+
+    print(docker_command)
     
     # Run container
     try:

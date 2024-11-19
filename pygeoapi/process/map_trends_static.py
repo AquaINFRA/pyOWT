@@ -162,8 +162,8 @@ def run_docker_container(
         in_id_trend_col, 
         in_id_shp_col,
         in_group,
-        in_p_value_threshold,
         in_p_value_col,
+        in_p_value_threshold,
         f"{container_out}/{outputFilename}"  # Output filename
     ]
     
