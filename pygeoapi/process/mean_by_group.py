@@ -55,7 +55,6 @@ class MeanByGroupProcessor(BaseProcessor):
             in_cols_to_group_by = in_cols_to_group_by.replace(" ", "")  # Remove all spaces
 
         in_value_col = data.get('colname_value') # "value", default was: "transparency_m"
-        print(in_cols_to_group_by)
 
         # Check:
         if input_data_url is None:

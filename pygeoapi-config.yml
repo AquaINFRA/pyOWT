@@ -348,3 +348,9 @@ resources:
         processor:
             name: MapTrendsStaticProcessor
 
+    owt-classification:
+        type: process
+        processor:
+            name: OwtClassificationProcessor
+
+
