@@ -63,6 +63,7 @@ class OwtClassificationProcessor(BaseProcessor):
             configJSON = json.load(configFile)
 
         download_dir = configJSON["download_dir"]
+        docker_executable = configJSON.get("docker_executable", "docker")
 
         input_data_url = data.get('input_data_url', 'Rrs_demo_AquaINFRA_hyper.csv')
         input_option = data.get('input_option')
@@ -70,9 +71,10 @@ class OwtClassificationProcessor(BaseProcessor):
         output_option = data.get('output_option')
 
         downloadfilename = 'owt_classification_output_%s-%s.txt' % (sensor.lower(), self.job_id)
-        downloadfilepath = configJSON['download_dir']+downloadfilename
+        #downloadfilepath = configJSON['download_dir']+downloadfilename
 
         returncode, stdout, stderr = run_docker_container(
+            docker_executable,
             input_data_url, 
             input_option, 
             sensor, 
@@ -80,6 +82,14 @@ class OwtClassificationProcessor(BaseProcessor):
             download_dir, 
             downloadfilename
         )
+
+        # print Python stderr/stdout to debug log:
+        for line in stdout.split("\n"):
+            if not len(line.strip()) == 0:
+                LOGGER.debug('Python stdout: %s' % line)
+        for line in stderr.split("\n"):
+            if not len(line.strip()) == 0:
+                LOGGER.debug('Python stderr: %s' % line)
 
         if not returncode == 0:
             err_msg = 'Running docker container failed.'
@@ -89,7 +99,7 @@ class OwtClassificationProcessor(BaseProcessor):
             raise ProcessorExecuteError(user_msg = err_msg)
 
         # Create download link:
-        downloadlink = configJSON['download_dir'] + downloadfilename
+        downloadlink = configJSON['download_dir'] +os.sep+"out"+os.sep+ downloadfilename
 
         # Build response containing the link
         # TODO Better naming
@@ -108,6 +118,7 @@ class OwtClassificationProcessor(BaseProcessor):
 
 
 def run_docker_container(
+        docker_executable,
         input_data_url, 
         input_option, 
         sensor, 
@@ -115,7 +126,7 @@ def run_docker_container(
         download_dir, 
         outputFilename
     ):
-    LOGGER.debug('Start running docker container')
+    LOGGER.debug('Prepare running docker container')
     container_name = f'owt-classification-image_{os.urandom(5).hex()}'
     image_name = 'owt-classification-image'
 
@@ -130,7 +141,7 @@ def run_docker_container(
 
     # Mount volumes and set command
     docker_command = [
-        "sudo", "docker", "run", "--rm", "--name", container_name,
+        docker_executable, "run", "--rm", "--name", container_name,
         "-v", f"{local_out}:{container_out}",  # Mount the volume for output
         image_name,  # Docker image name
         "--input", input_data_url,  # Input URL
@@ -139,13 +150,18 @@ def run_docker_container(
         "--output_option", str(output_option),  # Output option (1 or 2)
         "--output", f"{container_out}/{outputFilename}"  # Output file path
     ]
+
+    LOGGER.debug('Docker command: %s' % docker_command)
     
     # Run container
     try:
+        LOGGER.debug('Start running docker container')
         result = subprocess.run(docker_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout = result.stdout.decode()
         stderr = result.stderr.decode()
+        LOGGER.debug('Finished running docker container')
         return result.returncode, stdout, stderr
 
     except subprocess.CalledProcessError as e:
+        LOGGER.debug('Failed running docker container')
         return e.returncode, e.stdout.decode(), e.stderr.decode()
