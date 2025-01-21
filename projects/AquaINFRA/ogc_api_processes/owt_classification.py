@@ -99,7 +99,7 @@ class OwtClassificationProcessor(BaseProcessor):
             raise ProcessorExecuteError(user_msg = err_msg)
 
         # Create download link:
-        downloadlink = configJSON['download_dir'] +os.sep+"out"+os.sep+ downloadfilename
+        downloadlink = configJSON['download_url'] +os.sep+"out"+os.sep+ downloadfilename
 
         # Build response containing the link
         # TODO Better naming
