@@ -58,7 +58,7 @@ class OwtClassificationProcessor(BaseProcessor):
         self.job_id = job_id
 
     def execute(self, data, outputs=None):
-        config_file_path = os.environ.get('PYOWT_CONFIG_FILE', "./pygeoapi/process/config.json")
+        config_file_path = os.environ.get('PYOWT_CONFIG_FILE', "./config.json")
         with open(config_file_path) as configFile:
             configJSON = json.load(configFile)
 
@@ -70,7 +70,7 @@ class OwtClassificationProcessor(BaseProcessor):
         output_option = data.get('output_option')
 
         downloadfilename = 'owt_classification_output_%s-%s.txt' % (sensor.lower(), self.job_id)
-        downloadfilepath = configJSON['download_dir']+downloadfilename
+        #downloadfilepath = configJSON['download_dir']+downloadfilename
 
         returncode, stdout, stderr = run_docker_container(
             input_data_url, 
@@ -139,8 +139,6 @@ def run_docker_container(
         "--output_option", str(output_option),  # Output option (1 or 2)
         "--output", f"{container_out}/{outputFilename}"  # Output file path
     ]
-
-    print(docker_command)
     
     # Run container
     try:

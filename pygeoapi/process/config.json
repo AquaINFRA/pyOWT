@@ -1,5 +1,5 @@
 {
     "download_dir": "./pygeoapi/process/",
     "input_data_dir": "./pygeoapi/process/",
-    "own_url": "https://xx.igb-berlin.de/xx/"
+    "own_url": "https://aquainfra.ogc.igb-berlin.de/"
 }
