@@ -1,0 +1,142 @@
+{
+    "version": "0.1.0",
+    "id": "tordera-gloria",
+    "use_case": "Catalunya Inland",
+    "title": {
+        "en": "SWAT+, Soil and Water Assessment Tool"
+    },
+    "description": {
+        "en": "The Soil and Water Assessment Tool (SWAT+) is a hydrological model used to simulate processes such as surface runoff, groundwater flow, and water quality across watersheds of varying scales. It evaluates the effects of land use, management practices, and climate scenarios on water resources. SWAT+ is widely used for studying soil erosion, non-point source pollution, and watershed management (https://swat.tamu.edu/) .The tool allows users to upload custom TextInOut folders to model any watershed of interest. Users can define model parameters, the simulation time range, calibration settings, output variables, and temporal resolution. By default, the tool is configured to simulate the hydrological behavior of the La Tordera Basin from 2000 to 2022 using SWAT+. The default tool settings generate daily outputs of flow, water temperature, and nutrient levels at the mouth of La Tordera River between July 2019 and December 2020, allowing for an assessment of river flow parameters during Storm Gloria (19 January 2020). The default La Tordera Basin model is calibrated through a two-step calibration process: an initial soft calibration based on a qualitative evaluation of annual average outputs, followed by an automatic calibration by landscape units using observed gauge data from the Catalan Water Agency (Agència Catalana de l'Aigua, https://aca.gencat.cat/). This tool executes SWAT+ using SWATrunR ( https://github.com/chrisschuerz/SWATplusR ) with the SWAT+ rev60.5.7_64rel_linux executable."
+    },
+    "jobControlOptions": ["sync-execute", "async-execute"],
+    "keywords": ["tordera use case", "AquaINFRA", "R", "SWAT+", "watershed model"],
+    "links": [{
+        "type": "text/html",
+        "rel": "about",
+        "title": "GitHub repo",
+        "href": "https://github.com/AmandaBatlle/AquaINFRA_CaseUse_MedInlandModel",
+        "hreflang": "en-US"
+    },
+    {
+        "type": "text/html",
+        "rel": "about",
+        "is_oer": "yes",
+        "title": "How to use a OGC processing service with R",
+        "href": "https://github.com/AmandaBatlle/AquaINFRA_CaseUse_MedInlandModel",
+        "hreflang": "en-US"
+    },
+    {
+        "type": "text/html",
+        "rel": "about",
+        "is_oer": "yes",
+        "title": "How to use a OGC processing service with python",
+        "href": "https://github.com/AmandaBatlle/AquaINFRA_CaseUse_MedInlandModel",
+        "hreflang": "en-US"
+    }],
+    "inputs": {
+        "TextInOut_URL": {
+            "title": "URL to project folder",
+            "description": "To model a watershed other than the Tordera Basin, users can add a URL to their own zipped project folder. Important: Do not include the SWAT executable to that folder — AquaINFRA has integrated the executable version rev60.5.7_64rel_linux. Defaults to: https://raw.githubusercontent.com/AmandaBatlle/AquaINFRA_CaseUse_MedInlandModel/refs/heads/main/example_inputs/project.zip",
+            "schema": {
+                "type": "object",
+                "contentMediaType": "application/zip"
+            },
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "keywords": []
+        },
+        "par_cal": {
+            "title": "Parameter inputs",
+            "description": "JSON file including the parameter value change as defined by SWATrunR documentation (https://chrisschuerz.github.io/SWATrunR/articles/SWATrunR.html#parameter-inputs). Defaults to: https://raw.githubusercontent.com/AmandaBatlle/AquaINFRA_CaseUse_MedInlandModel/refs/heads/main/example_inputs/par_cal.json",
+            "schema": {
+                "type": "object",
+                "contentMediaType": "application/json"
+            },
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "keywords": []
+        },
+        "unit": {
+            "title": "Output Spatial unit",
+            "description": "Define the spatial unit for which to generate an output. Spatial unit refers to river section, HRU, or LSU as defined by La Tordera watershed delineation in (??????ADD URL??????LINK TO WATERSHED MAP). Defaults to: 1",
+            "schema": {
+                "type": "integer"
+            },
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "keywords": []
+        },
+        "file": {
+            "title": "SWAT Output File",
+            "description": "A SWAT+ output file name consists of three elements separated by underscores (_): spatial unit, output category, and time step. For example, 'channel_sd_day'. The spatial unit defines the scale of the output and can be basin, hru, lsunit, channel, aquifer, or reservoir. The output category specifies the type of data such as wb (water balance), nb (nutrient balance), ls (losses), pw (plant and weather), or sd (streamflow and sediment in channels). The time step indicates the temporal resolution and can be day (daily), mon (monthly), yr (yearly), or aa (annual average). Combining these elements forms the output file name. For more details, refer to the SWAT+ OUTPUT FILES section in the SWAT+ documentation (https://swatplus.gitbook.io/io-docs). Defaults to: \"channel_sd_day\"",
+            "schema": {
+                "type": "string"
+            },
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "keywords": []
+        },
+        "variable": {
+            "title": "SWAT Variable",
+            "description": "Variable to simulate. Example: \"flo_out\". For more details and extended capabilities, refer to the SWAT+ OUTPUT FILES section in the SWAT+ documentation (https://swatplus.gitbook.io/io-docs). For one variable, enter the variable name. For multiple variables, enter them separated by comma. Defaults to: \"flo_out,water_temp\"",
+            "schema": {
+                "type": "string"
+            },
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "keywords": []
+        },
+        "start_date": {
+            "title": "Start Date",
+            "description": "Start date of the simulation in the format yyyymmdd. Defaults to: 20160101. Earliest possible date for the default input project: 20000101.",
+            "schema": {
+                "type": "integer"
+            },
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "keywords": []
+        },
+        "start_date_print": {
+            "title": "Start Date for printing",
+            "description": "Start date for printing in the format yyyymmdd. Defaults to: 20190601. Earliest possible date for the default input project: 20020101. It is recommended to allow for at least two warm-up years between the model simulation start and the model output printing to ensure relevant results.",
+            "schema": {
+                "type": "integer"
+            },
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "keywords": []
+        },
+        "end_date": {
+            "title": "End Date",
+            "description": "End date of the simulation in the format yyyymmdd. Defaults to: 20201231. Latest possible date for the default input project: 20221231.",
+            "schema": {
+                "type": "integer"
+            },
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "keywords": []
+        }
+    },
+    "outputs": {
+        "swat_output_file": {
+            "title": "Variable Simulation",
+            "description": "A CSV file containing simulated values for the specified time range and time step (daily, monthly, yearly, or annual average). Default output files include: channel flow out in m3 (flow_out.csv), water temperature Degrees Celcius (water_temp.csv).",
+            "schema": {
+                "type": "object",
+                "contentMediaType": "application/csv"
+            }
+        }
+    },
+    "example": {
+        "inputs": {
+            "TextInOut_URL": "ttps://raw.githubusercontent.com/AmandaBatlle/AquaINFRA_CaseUse_MedInlandModel/refs/heads/main/example_inputs/project.zip",
+            "par_cal": "ttps://raw.githubusercontent.com/AmandaBatlle/AquaINFRA_CaseUse_MedInlandModel/refs/heads/main/example_inputs/par_cal.json",
+            "unit": 1,
+            "file": "channel_sd_day",
+            "variable": "flo_out,water_temp",
+            "start_date": 20160101,
+            "end_date": 20201231,
+            "start_date_print": 20190601
+        }
+    }
+}

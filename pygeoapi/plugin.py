@@ -71,7 +71,8 @@ PLUGINS = {
     },
     'process': {
         'HelloWorld': 'pygeoapi.process.hello_world.HelloWorldProcessor',
-        'TestProcessR': 'pygeoapi.process.test_process_r.TestProcessR',
+        'TorderaGloriaProcessor': 'pygeoapi.process.tordera_gloria.TorderaGloriaProcessor',
+        'SwatMitgcmConnectionProcessor': 'pygeoapi.process.swat_mitgcm_connection.SwatMitgcmConnectionProcessor',
         'PointsAttPolygonProcessor': 'pygeoapi.process.points_att_polygon.PointsAttPolygonProcessor',
         'PeriConvProcessor': 'pygeoapi.process.peri_conv.PeriConvProcessor',
         'MeanByGroupProcessor': 'pygeoapi.process.mean_by_group.MeanByGroupProcessor',

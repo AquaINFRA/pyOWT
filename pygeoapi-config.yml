@@ -303,11 +303,6 @@ resources:
         processor:
             name: HelloWorld
 
-    test-process-r:
-        type: process
-        processor:
-            name: TestProcessR
-
     points-att-polygon:
         type: process
         processor:
@@ -352,5 +347,15 @@ resources:
         type: process
         processor:
             name: OwtClassificationProcessor
+
+    tordera-gloria:
+        type: process
+        processor:
+            name: TorderaGloriaProcessor
+            
+    tordera-gloria-connection:
+        type: process
+        processor:
+            name: SwatMitgcmConnectionProcessor
 
 
