@@ -11,12 +11,12 @@ from pyowt.OWT import OWT
 version_tag = 'v02'
 date_tag = datetime.today().strftime("%Y-%m-%d")
 # date_tag = '2024-10-21'
-VersionLog = 'Covariance matrix has been shrunk based on the original training data results.'
+VersionLog = 'Covariance matrix has been shrinked based on the original training data results.'
 VersionLog = (
-    "This is the shrunk version of the OWT classification (v01) based on the training dataset"
+    "This is the shrinked version of the OWT classification (v01) based on the training dataset"
     " (https://zenodo.org/records/12803329). The classification was initially performed using the"
     " v01 centroids, and samples that retained the same water type labels as in Bi and Hieronymi"
-    " (2024) were kept. This version is referred to as 'shrunk.' Note that this version still"
+    " (2024) were kept. This version is referred to as 'shrinked.' Note that this version still"
     " provides nearly identical mean water spectra for each type, but with reduced covariance,"
     " which may lower the membership values for inputs that are far from the cluster centers."
     " The related manuscript is currently under preparation."
@@ -44,9 +44,15 @@ ov_mat = np.hstack((AVW, ABC, NDI))
 owt = OWT(ov.AVW, ov.Area, ov.NDI, version='v01')
 type_new = owt.type_str
 type_new = type_new.reshape(type_new.shape[0])
+ind_same_type = np.where(type_new == type_define)[0]
 
-# find unique types
-unique_types = np.sort(np.unique(type_define))
+# select the used index
+index_used = ind_same_type
+
+# filter selected data
+type_used = type_define[index_used]
+ov_mat = ov_mat[index_used, :]
+unique_types = np.sort(np.unique(type_used))
 
 
 # keep the same data structure
@@ -56,7 +62,7 @@ mean_new = np.zeros((N, 3))
 covm_new = np.zeros((3, 3, N))
 
 for i, t in enumerate(unique_types):
-    indices = np.where((type_define == t) & (type_define == type_new))[0]
+    indices = np.where(type_used == t)[0]
     samples = ov_mat[indices, :]
 
     mean_type = np.mean(samples, axis=0)
@@ -114,7 +120,8 @@ dc_new.to_netcdf(output_file)
 results = []
 
 for t in unique_types:
-    indices = np.where((type_define == t) & (type_define == type_new))[0]
+
+    indices = np.where(type_used == t)[0]
     Rrs_samples = Rrs[indices, :]
     Area_samples = Area[indices, 0]
 

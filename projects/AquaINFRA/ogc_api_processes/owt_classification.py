@@ -1,11 +1,9 @@
 import logging
-
-from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
-from pygeoapi.process.pyOWT.projects.AquaINFRA.run_AquaINFRA import run_owt_csv
-from pygeoapi.process.pyOWT.projects.AquaINFRA.run_AquaINFRA import run_owt_sat
-import os
+import subprocess
 import json
-import requests
+import os
+from pathlib import Path
+from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -52,12 +50,6 @@ class OwtClassificationProcessor(BaseProcessor):
         super().__init__(processor_def, PROCESS_METADATA)
         self.supports_outputs = True
         self.job_id = None
-        self.config = None
-
-        # Set config:
-        config_file_path = os.environ.get('PYOWT_CONFIG_FILE', "./config.json")
-        with open(config_file_path, 'r') as config_file:
-            self.config = json.load(config_file)
 
     def __repr__(self):
         return f'<OwtClassificationProcessor> {self.name}'
@@ -66,55 +58,48 @@ class OwtClassificationProcessor(BaseProcessor):
         self.job_id = job_id
 
     def execute(self, data, outputs=None):
+        config_file_path = os.environ.get('PYOWT_CONFIG_FILE', "./config.json")
+        with open(config_file_path) as configFile:
+            configJSON = json.load(configFile)
+
+        download_dir = configJSON["download_dir"]
+        docker_executable = configJSON.get("docker_executable", "docker")
+
         input_data_url = data.get('input_data_url', 'Rrs_demo_AquaINFRA_hyper.csv')
         input_option = data.get('input_option')
         sensor = data.get('sensor')
-        output_option = int(data.get('output_option'))
+        output_option = data.get('output_option')
 
-        # Check sensor:
-        support_sensors = set(['HYPER', 'AVW700', 'MODIS_Aqua', 'MODIS_Terra', 'OLCI_S3A', 'OLCI_S3B', 'MERIS', 'SeaWiFS', 'HawkEye', 'OCTS', 'GOCI', 'VIIRS_NPP', 'VIIRS_JPSS1', 'VIIRS_JPSS2', 'CZCS', 'MSI_S2A', 'MSI_S2B', 'OLI', 'ENMAP_HSI', 'CMEMS_HROC_L3_optics', 'cmems_P1D400', 'AERONET_OC_1', 'AERONET_OC_2'])
-        #support_sensors = pd.read_csv("data/AVW_all_regression_800.txt").iloc[:, 0].astype(str)
-        # TODO: Read this from AVW_all_regression_800.txt everytime. Add HYPER manually.
-        # TODO: Ask Shun Bi: Why is HYPER included?
-        if not sensor in support_sensors:
-            raise ProcessorExecuteError('Sensor not supported: "%s". Please pick one of: %s' % (sensor, ', '.join(support_sensors)))
+        downloadfilename = 'owt_classification_output_%s-%s.txt' % (sensor.lower(), self.job_id)
+        #downloadfilepath = configJSON['download_dir']+downloadfilename
 
-        # Use example input file:
-        input_path = None
-        if input_data_url in ['Rrs_demo_AquaINFRA_hyper.csv', 'Rrs_demo_AquaINFRA_msi.csv', 'Rrs_demo_AquaINFRA_olci.csv']:
-            LOGGER.info('Using example input data file: %s' % input_data_url)
-            input_dir = self.config['pyowt']['example_input_data_dir']
-            input_path = input_dir.rstrip('/')+os.sep+input_data_url
+        returncode, stdout, stderr = run_docker_container(
+            docker_executable,
+            input_data_url, 
+            input_option, 
+            sensor, 
+            output_option, 
+            download_dir, 
+            downloadfilename
+        )
 
-        # ... Or download input file:
-        # TODO: Also allow user to paste CSV as POST request body/payload! - Check size though!
-        else:
-            LOGGER.info('Downloading input data file: %s' % input_data_url)
-            resp = requests.get(input_data_url)
-            if resp.status_code == 200:
-                input_dir = self.config['pyowt']['input_data_dir']
-                input_path = input_dir.rstrip('/')+os.sep+'inputs_%s' % self.job_id
-                LOGGER.debug('Writing input data file to: %s' % input_path)
-                with open(input_path, 'w') as myfile:
-                    myfile.write(resp.text)
-            else:
-                raise ProcessorExecuteError('Could not download input file (HTTP status %s): %s' % (resp.status_code, input_data_url))
+        # print Python stderr/stdout to debug log:
+        for line in stdout.split("\n"):
+            if not len(line.strip()) == 0:
+                LOGGER.debug('Python stdout: %s' % line)
+        for line in stderr.split("\n"):
+            if not len(line.strip()) == 0:
+                LOGGER.debug('Python stderr: %s' % line)
 
-        # Where to store output
-        downloadfilename = 'pyowt_output_%s-%s.txt' % (sensor.lower(), self.job_id)
-        downloadfilepath = self.config['download_dir']+downloadfilename
-
-        # https://github.com/bishun945/pyOWT/blob/AquaINFRA/run_AquaINFRA.py
-        if input_option.lower() == 'csv':
-            run_owt_csv(input_path_to_csv=input_path, input_sensor=sensor, output_path=downloadfilepath, output_option=output_option)
-        elif input_option.lower() == 'sat':
-            run_owt_sat(input_path_to_sat=input_path, input_sensor=sensor, output_path=downloadfilepath, output_option=output_option)
-        else:
-            err_msg = 'The input_option should be either "csv" or "sat"'
-            raise ProcessorExecuteError(err_msg)
+        if not returncode == 0:
+            err_msg = 'Running docker container failed.'
+            for line in stderr.split('\n'):
+                if line.startswith('Error'):
+                    err_msg = 'Running docker container failed: %s' % (line)
+            raise ProcessorExecuteError(user_msg = err_msg)
 
         # Create download link:
-        downloadlink = self.config['download_url'] + downloadfilename
+        downloadlink = configJSON['download_url'] +os.sep+"out"+os.sep+ downloadfilename
 
         # Build response containing the link
         # TODO Better naming
@@ -132,3 +117,51 @@ class OwtClassificationProcessor(BaseProcessor):
         return 'application/json', response_object
 
 
+def run_docker_container(
+        docker_executable,
+        input_data_url, 
+        input_option, 
+        sensor, 
+        output_option, 
+        download_dir, 
+        outputFilename
+    ):
+    LOGGER.debug('Prepare running docker container')
+    container_name = f'owt-classification-image_{os.urandom(5).hex()}'
+    image_name = 'owt-classification-image'
+
+    # Prepare container command
+    container_out = '/app/projects/AquaINFRA/out'
+
+    # Define local paths
+    local_out = os.path.join(download_dir, "out")
+
+    # Ensure directories exist
+    os.makedirs(local_out, exist_ok=True)
+
+    # Mount volumes and set command
+    docker_command = [
+        docker_executable, "run", "--rm", "--name", container_name,
+        "-v", f"{local_out}:{container_out}",  # Mount the volume for output
+        image_name,  # Docker image name
+        "--input", input_data_url,  # Input URL
+        "--input_option", input_option,  # Input option (e.g., "csv")
+        "--sensor", sensor,  # Sensor name (e.g., "HYPER")
+        "--output_option", str(output_option),  # Output option (1 or 2)
+        "--output", f"{container_out}/{outputFilename}"  # Output file path
+    ]
+
+    LOGGER.debug('Docker command: %s' % docker_command)
+    
+    # Run container
+    try:
+        LOGGER.debug('Start running docker container')
+        result = subprocess.run(docker_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout = result.stdout.decode()
+        stderr = result.stderr.decode()
+        LOGGER.debug('Finished running docker container')
+        return result.returncode, stdout, stderr
+
+    except subprocess.CalledProcessError as e:
+        LOGGER.debug('Failed running docker container')
+        return e.returncode, e.stdout.decode(), e.stderr.decode()

@@ -7,24 +7,8 @@ setup(
     author='Shun Bi',
     packages=find_packages(),
     install_requires=[
-        'numpy',
-        'pandas',
-        'scipy',
-        'PyYAML',
-        'netCDF4',
-        'xarray',
-        'matplotlib'
+        req.strip() for req in open('requirements.txt').readlines()
     ],
-    extras_require={
-        'geeowt': [
-            'geemap',
-            'earthengine-api'
-        ],
-        'satellite_handlers': [
-            'osgeo',
-            'lxml'
-        ]
-    },
     include_package_data=True,
     package_data={
         'pyowt': ['data/*']

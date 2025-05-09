@@ -21,13 +21,16 @@ Shun Bi, shun.bi@outlook.com
 '''
 
 import argparse
+import sys
+import os
 
 # common pkg
 import numpy as np
 import pandas as pd
 
-# import OWT pkg
-# the exception is for pygeoapi importing in AquaINFRA 
+# Add two levels up to the sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+
 try:
     from pyowt.OpticalVariables import OpticalVariables
     from pyowt.OWT import OWT
@@ -43,9 +46,7 @@ import xarray as xr
 import zipfile
 import tempfile
 from lxml import etree
-import os
 from datetime import date
-
 
 def read_csv_with_auto_sep(file_path): 
     separators = [',', '\t', r'\s+']

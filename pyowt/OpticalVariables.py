@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 
 class OpticalVariables():
 
-    def __init__(self, Rrs, band, sensor=None, version='v01'):
+    def __init__(self, Rrs, band, sensor=None):
 
         if not isinstance(Rrs, np.ndarray):
 
@@ -25,18 +25,12 @@ class OpticalVariables():
         elif np.ndim(Rrs) == 3:
             # here assume shape[2] is wavelength
             self.Rrs = Rrs
-        elif np.ndim(Rrs) == 4:
-            # here assume (wavelen, time, lat, lon)
-            self.original_shape = Rrs.shape[1:] # shape of (time, lat, lon)
-            Rrs_ = Rrs.transpose(1, 2, 3, 0).reshape(-1, Rrs.shape[0])
-            self.Rrs = Rrs_.reshape(Rrs_.shape[0], 1, Rrs_.shape[1])
         else:
-            raise ValueError("Input 'Rrs' should only have 1-4 dims!")
+            raise ValueError("Input 'Rrs' should only have 1, 2, or 3 dims!")
 
         self.band = np.array(band)
 
         self.sensor = sensor
-        self.version = version
 
         self.AVW = None
         self.Area = None
@@ -201,17 +195,8 @@ class OpticalVariables():
 
 
     def calculate_NDI(self):
-        r_blue = self.Rrs[:, :, np.where(np.isin(self.band, self.sensor_RGB_bands[0]))[0]]
-        r_green = self.Rrs[:, :, np.where(np.isin(self.band, self.sensor_RGB_bands[1]))[0]]
-        r_red = self.Rrs[:, :, np.where(np.isin(self.band, self.sensor_RGB_bands[2]))[0]]
-
-        if self.version == 'v99':
-            r_1 = np.maximum(r_blue, r_green)
-        else:
-            r_1 = r_green
-
-        NDI = (r_1 - r_red) / (r_1 + r_red)
-        self.NDI = NDI[:, :, 0]
+        Rrs_for_NDI = self.Rrs[:, :, np.where(np.isin(self.band, self.sensor_RGB_bands[1:]))[0]] # [1:] for G and R
+        self.NDI = -np.diff(Rrs_for_NDI, axis=-1)[:, :, 0] / np.sum(Rrs_for_NDI, axis=-1)
 
 
     def run(self):
@@ -228,13 +213,6 @@ class OpticalVariables():
         self.calculate_AVW()
         self.calculate_Area()
         self.calculate_NDI()
-
-    def shape_reverse(self, arr):
-        if hasattr(self, 'original_shape'):
-            arr = arr.reshape(self.original_shape)
-            return arr
-        else:
-            raise ValueError("Not 4d arr input and no original_shape")
     
 
 
