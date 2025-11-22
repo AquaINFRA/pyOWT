@@ -159,6 +159,7 @@ class OwtClassificationProcessor(BaseProcessor):
         returncode, stdout, stderr = run_docker_container(
             self.docker_executable,
             self.image_name,
+            self.job_id,
             input_data_url, 
             input_option, 
             sensor, 
@@ -202,6 +203,7 @@ class OwtClassificationProcessor(BaseProcessor):
 def run_docker_container(
         docker_executable,
         image_name,
+        job_id,
         input_data_url, 
         input_option, 
         sensor, 
