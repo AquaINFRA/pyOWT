@@ -113,6 +113,7 @@ class OwtClassificationProcessor(BaseProcessor):
         self.supports_outputs = True
         self.job_id = None
         self.process_id = self.metadata["id"]
+        self.image_name = 'owt-classification-image:20250121'
 
     def __repr__(self):
         return f'<OwtClassificationProcessor> {self.name}'
@@ -154,6 +155,7 @@ class OwtClassificationProcessor(BaseProcessor):
 
         returncode, stdout, stderr = run_docker_container(
             docker_executable,
+            self.image_name,
             input_data_url, 
             input_option, 
             sensor, 
@@ -196,6 +198,7 @@ class OwtClassificationProcessor(BaseProcessor):
 
 def run_docker_container(
         docker_executable,
+        image_name,
         input_data_url, 
         input_option, 
         sensor, 
@@ -203,9 +206,15 @@ def run_docker_container(
         output_dir,
         outputFilename
     ):
-    LOGGER.debug('Prepare running docker container')
-    container_name = f'owt-classification-image_{os.urandom(5).hex()}'
-    image_name = 'owt-classification-image:20250121'
+
+    LOGGER.debug('Will use this image: %s' % image_name)
+
+    # Create container name
+    # Note: Only [a-zA-Z0-9][a-zA-Z0-9_.-] are allowed
+    #container_name = "%s_%s" % (image_name.split(':')[0], os.urandom(5).hex())
+    container_name = "%s_%s" % (image_name.split(':')[0], job_id)
+    LOGGER.debug(f'Prepare running docker (image {image_name}, container: {container_name})')
+
 
     # Prepare container command
     container_out = '/app/projects/AquaINFRA/out'
