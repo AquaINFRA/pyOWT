@@ -10,14 +10,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 '''
-
 ### Reading input csv from any URL:
 # Example 1: HYPER, Rrs_demo_AquaINFRA_hyper.csv
 curl -X POST https://${PYSERVER}/processes/owt-classification/execution \
   --header "Content-Type: application/json" \
   --data '{
     "inputs": {
-        "input_data_url": "https://raw.githubusercontent.com/bishun945/pyOWT/refs/heads/AquaINFRA/data/Rrs_demo_AquaINFRA_hyper.csv",
+        "input_data_url": "https://raw.githubusercontent.com/bishun945/pyOWT/refs/heads/main/projects/AquaINFRA/data/Rrs_demo_AquaINFRA_hyper.csv",
         "input_option": "csv ",
         "sensor": "HYPER",
         "output_option": 1
@@ -29,7 +28,7 @@ curl -X POST https://${PYSERVER}/processes/owt-classification/execution \
   --header "Content-Type: application/json" \
   --data '{
     "inputs": {
-        "input_data_url": "https://raw.githubusercontent.com/bishun945/pyOWT/refs/heads/AquaINFRA/data/Rrs_demo_AquaINFRA_msi.csv",
+        "input_data_url": "https://raw.githubusercontent.com/bishun945/pyOWT/refs/heads/main/projects/AquaINFRA/data/Rrs_demo_AquaINFRA_msi.csv",
         "input_option":"csv",
         "sensor":"MSI_S2A",
         "output_option": 1
@@ -41,7 +40,7 @@ curl -X POST https://${PYSERVER}/processes/owt-classification/execution \
   --header "Content-Type: application/json" \
   --data '{
     "inputs": {
-        "input_data_url": "https://raw.githubusercontent.com/bishun945/pyOWT/refs/heads/AquaINFRA/data/Rrs_demo_AquaINFRA_olci.csv",
+        "input_data_url": "https://raw.githubusercontent.com/bishun945/pyOWT/refs/heads/main/projects/AquaINFRA/data/Rrs_demo_AquaINFRA_olci.csv",
         "input_option":"csv",
         "sensor":"OLCI_S3A",
         "output_option": 1
