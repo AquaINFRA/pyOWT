@@ -114,6 +114,12 @@ class OwtClassificationProcessor(BaseProcessor):
         self.job_id = None
         self.process_id = self.metadata["id"]
         self.image_name = 'owt-classification-image:20250121'
+        config_file_path = os.environ.get('AQUAINFRA_CONFIG_FILE', "./config.json")
+        with open(config_file_path) as config_file:
+            config = json.load(config_file)
+            self.download_dir = config["download_dir"]
+            self.download_url = config["download_url"]
+            self.docker_executable = config.get("docker_executable", "docker")
 
     def __repr__(self):
         return f'<OwtClassificationProcessor> {self.name}'
@@ -122,13 +128,10 @@ class OwtClassificationProcessor(BaseProcessor):
         self.job_id = job_id
 
     def execute(self, data, outputs=None):
-        config_file_path = os.environ.get('AQUAINFRA_CONFIG_FILE', "./config.json")
-        with open(config_file_path) as configFile:
-            configJSON = json.load(configFile)
 
-        self.download_dir = configJSON["download_dir"]
-        self.download_url = configJSON["download_url"]
-        docker_executable = configJSON.get("docker_executable", "docker")
+        #################################
+        ### Get user inputs and check ###
+        #################################
 
         input_data_url = data.get('input_data_url', 'Rrs_demo_AquaINFRA_hyper.csv')
         input_option = data.get('input_option')
@@ -154,7 +157,7 @@ class OwtClassificationProcessor(BaseProcessor):
         ############################
 
         returncode, stdout, stderr = run_docker_container(
-            docker_executable,
+            self.docker_executable,
             self.image_name,
             input_data_url, 
             input_option, 
