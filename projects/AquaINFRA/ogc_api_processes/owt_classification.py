@@ -50,6 +50,7 @@ class OwtClassificationProcessor(BaseProcessor):
         super().__init__(processor_def, PROCESS_METADATA)
         self.supports_outputs = True
         self.job_id = None
+        self.process_id = self.metadata["id"]
 
     def __repr__(self):
         return f'<OwtClassificationProcessor> {self.name}'
@@ -62,7 +63,8 @@ class OwtClassificationProcessor(BaseProcessor):
         with open(config_file_path) as configFile:
             configJSON = json.load(configFile)
 
-        download_dir = configJSON["download_dir"]
+        self.download_dir = configJSON["download_dir"]
+        self.download_url = configJSON["download_url"]
         docker_executable = configJSON.get("docker_executable", "docker")
 
         input_data_url = data.get('input_data_url', 'Rrs_demo_AquaINFRA_hyper.csv')
@@ -70,8 +72,23 @@ class OwtClassificationProcessor(BaseProcessor):
         sensor = data.get('sensor')
         output_option = data.get('output_option')
 
+        #################################
+        ### Input and output          ###
+        ### storage/download location ###
+        #################################
+
+        # Where to store output data
+        output_dir = f'{self.download_dir}/out/{self.process_id}/job_{self.job_id}'
+        output_url = f'{self.download_url}/out/{self.process_id}/job_{self.job_id}'
+        os.makedirs(output_dir, exist_ok=True)
+        LOGGER.debug(f'All results will be stored     in: {output_dir}')
+        LOGGER.debug(f'All results will be accessible in: {output_url}')
         downloadfilename = 'owt_classification_output_%s-%s.txt' % (sensor.lower(), self.job_id)
-        #downloadfilepath = configJSON['download_dir']+downloadfilename
+        downloadlink = f'{output_url}/{downloadfilename}'
+
+        ############################
+        ### Run docker container ###
+        ############################
 
         returncode, stdout, stderr = run_docker_container(
             docker_executable,
@@ -79,7 +96,7 @@ class OwtClassificationProcessor(BaseProcessor):
             input_option, 
             sensor, 
             output_option, 
-            download_dir, 
+            output_dir,
             downloadfilename
         )
 
@@ -98,8 +115,6 @@ class OwtClassificationProcessor(BaseProcessor):
                     err_msg = 'Running docker container failed: %s' % (line)
             raise ProcessorExecuteError(user_msg = err_msg)
 
-        # Create download link:
-        downloadlink = configJSON['download_url'] +os.sep+"out"+os.sep+ downloadfilename
 
         # Build response containing the link
         # TODO Better naming
@@ -123,7 +138,7 @@ def run_docker_container(
         input_option, 
         sensor, 
         output_option, 
-        download_dir, 
+        output_dir,
         outputFilename
     ):
     LOGGER.debug('Prepare running docker container')
@@ -133,16 +148,10 @@ def run_docker_container(
     # Prepare container command
     container_out = '/app/projects/AquaINFRA/out'
 
-    # Define local paths
-    local_out = os.path.join(download_dir, "out")
-
-    # Ensure directories exist
-    os.makedirs(local_out, exist_ok=True)
-
     # Mount volumes and set command
     docker_command = [
         docker_executable, "run", "--rm", "--name", container_name,
-        "-v", f"{local_out}:{container_out}",  # Mount the volume for output
+        "-v", f"{output_dir}:{container_out}",  # Mount the volume for output
         image_name,  # Docker image name
         "--input", input_data_url,  # Input URL
         "--input_option", input_option,  # Input option (e.g., "csv")
@@ -165,3 +174,4 @@ def run_docker_container(
     except subprocess.CalledProcessError as e:
         LOGGER.debug('Failed running docker container')
         return e.returncode, e.stdout.decode(), e.stderr.decode()
+
