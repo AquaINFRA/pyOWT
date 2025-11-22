@@ -205,7 +205,7 @@ def run_docker_container(
     ):
     LOGGER.debug('Prepare running docker container')
     container_name = f'owt-classification-image_{os.urandom(5).hex()}'
-    image_name = 'owt-classification-image'
+    image_name = 'owt-classification-image:20250121'
 
     # Prepare container command
     container_out = '/app/projects/AquaINFRA/out'
