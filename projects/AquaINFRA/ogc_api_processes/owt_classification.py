@@ -17,7 +17,7 @@ curl -X POST https://${PYSERVER}/processes/owt-classification/execution \
   --data '{
     "inputs": {
         "input_data_url": "https://raw.githubusercontent.com/bishun945/pyOWT/refs/heads/main/projects/AquaINFRA/data/Rrs_demo_AquaINFRA_hyper.csv",
-        "input_option": "csv ",
+        "input_option": "csv",
         "sensor": "HYPER",
         "output_option": 1
     }
@@ -113,7 +113,7 @@ class OwtClassificationProcessor(BaseProcessor):
         self.supports_outputs = True
         self.job_id = None
         self.process_id = self.metadata["id"]
-        self.image_name = 'owt-classification-image:20250121'
+        self.image_name = 'owt-classification-image:20251122'
         config_file_path = os.environ.get('AQUAINFRA_CONFIG_FILE', "./config.json")
         with open(config_file_path) as config_file:
             config = json.load(config_file)
@@ -156,7 +156,7 @@ class OwtClassificationProcessor(BaseProcessor):
         ### Run docker container ###
         ############################
 
-        returncode, stdout, stderr = run_docker_container(
+        returncode, stdout, stderr, user_err_msg = run_docker_container(
             self.docker_executable,
             self.image_name,
             self.job_id,

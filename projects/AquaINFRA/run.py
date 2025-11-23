@@ -130,7 +130,9 @@ def run_owt_sat(input_path_to_sat, input_sensor, output_path, output_option=1):
 
 
 def main():
-    
+    print("Found input args:")
+    print(sys.argv)
+
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
     data_file_path = os.path.join(project_root, 'pyowt', 'data', 'AVW_all_regression_800.txt')
 
@@ -151,7 +153,7 @@ def main():
     elif args.input_option == "sat":
         run_owt_sat(input_path_to_sat=args.input, input_sensor=args.sensor, output_path=args.output, output_option=args.output_option)
     else:
-        raise ValueError('The input_option should be either "csv" or "sat"')
+        raise ValueError(f'The input_option should be either "csv" or "sat", not "{args.input_option}"')
 
 
 
