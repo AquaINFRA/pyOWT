@@ -168,21 +168,10 @@ class OwtClassificationProcessor(BaseProcessor):
             downloadfilename
         )
 
-        # print Python stderr/stdout to debug log:
-        for line in stdout.split("\n"):
-            if not len(line.strip()) == 0:
-                LOGGER.debug('Python stdout: %s' % line)
-        for line in stderr.split("\n"):
-            if not len(line.strip()) == 0:
-                LOGGER.debug('Python stderr: %s' % line)
-
         if not returncode == 0:
-            err_msg = 'Running docker container failed.'
-            for line in stderr.split('\n'):
-                if line.startswith('Error'):
-                    err_msg = 'Running docker container failed: %s' % (line)
+            user_err_msg = "no message" if len(user_err_msg) == 0 else user_err_msg
+            err_msg = 'Running docker container failed: %s' % user_err_msg
             raise ProcessorExecuteError(user_msg = err_msg)
-
 
         # Build response containing the link
         # TODO Better naming
@@ -245,9 +234,54 @@ def run_docker_container(
         stdout = result.stdout.decode()
         stderr = result.stderr.decode()
         LOGGER.debug('Finished running docker container')
-        return result.returncode, stdout, stderr
+        log_docker_outputs(stdout, stderr)
+        return result.returncode, stdout, stderr, "no error"
 
     except subprocess.CalledProcessError as e:
-        LOGGER.debug('Failed running docker container')
-        return e.returncode, e.stdout.decode(), e.stderr.decode()
+        returncode = e.returncode
+        stdout = e.stdout.decode()
+        stderr = e.stderr.decode()
+        LOGGER.error('Failed running docker container (exit code %s)' % returncode)
+        log_docker_outputs(stdout, stderr)
+        user_err_msg = get_error_message_from_docker_stderr(stderr)
+        return returncode, stdout, stderr, user_err_msg
+
+
+def log_docker_outputs(stdout, stderr):
+    for line in stdout.split('\n'):
+        if line:
+            LOGGER.debug('Docker stdout: %s' % line)
+    for line in stderr.split('\n'):
+        if line:
+            LOGGER.debug('Docker stderr: %s' % line)
+
+
+def get_error_message_from_docker_stderr(stderr):
+    '''
+    We would like to return meaningful messages to users.
+    '''
+    user_err_msg = ""
+    for line in stderr.split('\n'):
+
+        # Skip empty lines:
+        if not line:
+            continue
+
+        # R error messages may start with the word "Error"
+        if "ERROR" in line or "Error" in line:
+            #LOGGER.debug('### Found explicit error line: %s' % line.strip())
+            if "raise" in line:
+                # The traceback contains the line that raises the error, so we
+                # would return that to the user...
+                # TODO: Do we have to add this to other run_docker too?
+                pass
+            else:
+                user_err_msg += line.strip()
+
+        else:
+            #LOGGER.debug('### Do not pass back to user: %s' % line.strip())
+            pass
+
+    LOGGER.info('USER ERROR MESSAGE: %s' % user_err_msg)
+    return user_err_msg
 
