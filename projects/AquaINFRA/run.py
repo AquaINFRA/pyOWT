@@ -98,7 +98,7 @@ def run_owt_csv(input_path_to_csv, input_sensor, output_path, output_option=1):
             'U_OWT7': u[:,:,9].flatten(),
         })
     else:
-        raise ValueError('The output_option should be either 1 or 2')
+        raise ValueError(f'The output_option should be either 1 or 2, not {output_option}')
 
     owt_result.to_csv(output_path, index=False)
 
@@ -126,7 +126,7 @@ def run_owt_sat(input_path_to_sat, input_sensor, output_path, output_option=1):
             )
         eumetsat.save_result()
     else:
-        raise ValueError('The output_option should be either 1 or 2')
+        raise ValueError(f'The output_option should be either 1 or 2, not {output_option}')
 
 
 def main():
